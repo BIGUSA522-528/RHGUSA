@@ -23,7 +23,7 @@
     name="attendance"
     :prefetch="false"
     :filters="serializedFilters"
-    :column-count="2"
+    :column-count="3"
   >
     <template #default="{generateReport}">
       <oxd-table-filter
@@ -230,8 +230,12 @@ export default {
           ? response.data.data
           : [];
         const rows = [
-          [$t('general.employee_name'), $t('time.time_hours')],
-          ...data.map((item) => [item.employeeName, item.time]),
+          [
+            $t('general.employee_name'),
+            $t('general.date'),
+            $t('time.time_hours'),
+          ],
+          ...data.map((item) => [item.employeeName, item.date, item.time]),
         ];
         downloadCsv(rows, 'attendance-summary-report.csv');
       } catch (e) {

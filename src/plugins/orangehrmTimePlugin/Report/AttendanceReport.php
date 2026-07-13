@@ -51,6 +51,7 @@ class AttendanceReport implements EndpointAwareReport
     use I18NHelperTrait;
 
     public const PARAMETER_EMPLOYEE_NAME = 'employeeName';
+    public const PARAMETER_DATE = 'date';
     public const PARAMETER_TIME = 'time';
 
     public const FILTER_EMP_NUMBER = 'empNumber';
@@ -202,6 +203,8 @@ class AttendanceReport implements EndpointAwareReport
         return new Header(
             [
                 (new Column(self::PARAMETER_EMPLOYEE_NAME))->setName($this->getI18NHelper()->transBySource('Employee Name'))
+                    ->setSize(self::DEFAULT_COLUMN_SIZE),
+                (new Column(self::PARAMETER_DATE))->setName($this->getI18NHelper()->transBySource('Date'))
                     ->setSize(self::DEFAULT_COLUMN_SIZE),
                 (new Column(self::PARAMETER_TIME))->setName($this->getI18NHelper()->transBySource('Time (Hours)'))
                     ->setCellProperties(['class' => ['col-alt' => true]])

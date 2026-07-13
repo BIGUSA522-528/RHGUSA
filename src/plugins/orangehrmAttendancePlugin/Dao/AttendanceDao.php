@@ -316,7 +316,8 @@ class AttendanceDao extends BaseDao
     /**
      * @param AttendanceReportSearchFilterParams $attendanceReportSearchFilterParams
      * @return array
-     * Example [ Employee full name (first name and last name), attendance record id, termination id, employee number, total hours in sec ]
+     * Example [ Employee full name (first name and last name), termination id, employee number, attendance date, total hours in sec ]
+     * One row per employee per day (grouped by empNumber + attendance date).
      */
     public function getAttendanceReportCriteriaList(
         AttendanceReportSearchFilterParams $attendanceReportSearchFilterParams
@@ -336,9 +337,13 @@ class AttendanceDao extends BaseDao
             'CONCAT(employee.firstName, \' \', employee.lastName) AS fullName',
             'IDENTITY(employee.employeeTerminationRecord) AS terminationId',
             'employee.empNumber as empNumber',
+            'SUBSTRING(attendanceRecord.punchInUserTime, 1, 10) AS attendanceDate',
             "SUM(TIME_DIFF(COALESCE(attendanceRecord.punchOutUtcTime, 0), COALESCE(attendanceRecord.punchInUtcTime, 0),'second')) AS total"
         );
         $q->groupBy('employee.empNumber');
+        $q->addGroupBy('attendanceDate');
+        $q->addOrderBy('employee.empNumber', 'ASC');
+        $q->addOrderBy('attendanceDate', 'ASC');
         return $this->getPaginator($q);
     }
     /**
