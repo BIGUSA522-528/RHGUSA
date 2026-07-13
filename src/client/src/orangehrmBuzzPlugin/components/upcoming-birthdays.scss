@@ -59,6 +59,13 @@
     font-size: 0.75rem;
     @include truncate(2, 1, #fff);
   }
+  &-location {
+    font-weight: 400;
+    margin-top: 0.1rem;
+    font-size: 0.7rem;
+    color: $oxd-interface-gray-darken-1-color;
+    @include truncate(1, 1, #fff);
+  }
   &-duration {
     width: 4rem;
     font-weight: 600;

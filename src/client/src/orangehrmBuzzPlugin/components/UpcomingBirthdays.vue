@@ -40,6 +40,13 @@
             <oxd-text tag="p" class="orangehrm-buzz-birthday-job-details">
               {{ birthday.jobTitle }}
             </oxd-text>
+            <oxd-text
+              v-if="birthday.location"
+              tag="p"
+              class="orangehrm-buzz-birthday-location"
+            >
+              {{ birthday.location }}
+            </oxd-text>
           </div>
         </div>
         <div class="orangehrm-buzz-birthday-duration">
@@ -144,7 +151,7 @@ export default {
         .then((response) => {
           const {data, meta} = response.data;
           this.birthdays = data.map((item) => {
-            const {employee, jobTitle, birthday} = item;
+            const {employee, jobTitle, location, birthday} = item;
             return {
               empNumber: employee.empNumber,
               empName: this.tEmpName(employee, {
@@ -152,6 +159,7 @@ export default {
                 excludePastEmpTag: false,
               }),
               jobTitle: jobTitle.title,
+              location: location?.name,
               birthdayDate: formatDate(parseDate(birthday), 'MMM dd', {
                 locale: this.locale,
               }),

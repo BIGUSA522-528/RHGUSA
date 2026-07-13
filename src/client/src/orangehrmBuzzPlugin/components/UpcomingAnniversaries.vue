@@ -40,6 +40,13 @@
             <oxd-text tag="p" class="orangehrm-buzz-anniversary-job-details">
               {{ anniversary.jobTitle }}
             </oxd-text>
+            <oxd-text
+              v-if="anniversary.location"
+              tag="p"
+              class="orangehrm-buzz-anniversary-location"
+            >
+              {{ anniversary.location }}
+            </oxd-text>
           </div>
         </div>
         <div class="orangehrm-buzz-anniversary-duration">
@@ -153,7 +160,7 @@ export default {
         .then((response) => {
           const {data, meta} = response.data;
           this.anniversaries = data.map((item) => {
-            const {employee, jobTitle, joinedDate} = item;
+            const {employee, jobTitle, location, joinedDate} = item;
             return {
               empNumber: employee.empNumber,
               empName: this.tEmpName(employee, {
@@ -161,6 +168,7 @@ export default {
                 excludePastEmpTag: false,
               }),
               jobTitle: jobTitle.title,
+              location: location?.name,
               joinedDate: formatDate(parseDate(joinedDate), 'MMM dd', {
                 locale: this.locale,
               }),

@@ -44,6 +44,12 @@ use OrangeHRM\Entity\Employee;
  *         @OA\Property(property="title", type="string"),
  *         @OA\Property(property="isDeleted", type="boolean"),
  *     ),
+ *     @OA\Property(
+ *         property="location",
+ *         type="object",
+ *         @OA\Property(property="id", type="integer"),
+ *         @OA\Property(property="name", type="string"),
+ *     ),
  *     @OA\Property(property="joinedDate", type="string", format="date")
  * )
  */
@@ -65,6 +71,8 @@ class EmployeeAnniversaryModel implements Normalizable
                 ['getJobTitle', 'getId'],
                 ['getJobTitle', 'getJobTitleName'],
                 ['getJobTitle', 'isDeleted'],
+                ['getDecorator', 'getLocation', 'getId'],
+                ['getDecorator', 'getLocation', 'getName'],
                 ['getDecorator', 'getJoinedDate'],
             ]
         );
@@ -79,6 +87,8 @@ class EmployeeAnniversaryModel implements Normalizable
                 ['jobTitle', 'id'],
                 ['jobTitle', 'title'],
                 ['jobTitle', 'isDeleted'],
+                ['location', 'id'],
+                ['location', 'name'],
                 'joinedDate',
             ]
         );
