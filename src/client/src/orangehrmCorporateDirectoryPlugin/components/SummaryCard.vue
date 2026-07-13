@@ -190,7 +190,7 @@ export default {
     margin-bottom: 1rem;
     word-break: break-word;
     &.--break-words {
-      @include truncate(2, 1, #fff);
+      @include truncate(2, 1.35, #fff);
     }
   }
 
@@ -202,7 +202,7 @@ export default {
     margin-bottom: 1rem;
     word-break: break-word;
     &.--break-words {
-      @include truncate(1, 1, #fff);
+      @include truncate(1, 1.35, #fff);
     }
   }
 
@@ -211,7 +211,7 @@ export default {
     text-align: left;
     word-break: break-word;
     &.--break-words {
-      @include truncate(1, 1, #fff);
+      @include truncate(1, 1.35, #fff);
     }
     &:first-of-type {
       margin-bottom: 0.4rem;
