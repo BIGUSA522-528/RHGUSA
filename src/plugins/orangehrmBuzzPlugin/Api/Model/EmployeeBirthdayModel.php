@@ -65,7 +65,7 @@ class EmployeeBirthdayModel implements Normalizable
                 ['getJobTitle', 'getId'],
                 ['getJobTitle', 'getJobTitleName'],
                 ['getJobTitle', 'isDeleted'],
-                'birthday',
+                ['getDecorator', 'getBirthday'],
             ]
         );
         $this->setAttributeNames(
