@@ -29,7 +29,7 @@
       <oxd-table-filter
         :filter-title="$t('attendance.attendance_total_summary_report')"
       >
-        <oxd-form @submit-valid="generateReport">
+        <oxd-form @submit-valid="handleSubmit(generateReport)">
           <oxd-form-row>
             <oxd-grid :cols="3" class="orangehrm-full-width-grid">
               <oxd-grid-item>
@@ -80,8 +80,16 @@
           <oxd-form-actions>
             <oxd-button
               type="submit"
+              display-type="ghost"
+              :is-loading="isExporting"
+              :label="$t('general.download')"
+              @click="pendingAction = 'export'"
+            />
+            <oxd-button
+              type="submit"
               display-type="secondary"
               :label="$t('general.view')"
+              @click="pendingAction = 'view'"
             />
           </oxd-form-actions>
         </oxd-form>
@@ -111,6 +119,8 @@ import EmployeeAutocomplete from '@/core/components/inputs/EmployeeAutocomplete'
 import EmploymentStatusDropdown from '@/orangehrmPimPlugin/components/EmploymentStatusDropdown';
 import usei18n from '@/core/util/composable/usei18n';
 import useDateFormat from '@/core/util/composable/useDateFormat';
+import useToast from '@/core/util/composable/useToast';
+import {APIService} from '@/core/util/services/api.service';
 
 const defaultFilters = {
   employee: null,
@@ -142,6 +152,39 @@ export default {
     });
     const {$t} = usei18n();
     const {userDateFormat} = useDateFormat();
+    const {error: showErrorToast} = useToast();
+    const pendingAction = ref('view');
+    const isExporting = ref(false);
+
+    const reportDataHttp = new APIService(
+      window.appGlobal.baseUrl,
+      '/api/v2/time/reports/data',
+    );
+
+    const csvCell = (value) => {
+      const text = value === null || value === undefined ? '' : String(value);
+      if (/[",\n]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    };
+
+    const downloadCsv = (rows, filename) => {
+      const csvContent = rows
+        .map((row) => row.map(csvCell).join(','))
+        .join('\r\n');
+      const blob = new Blob(['﻿' + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    };
 
     const rules = {
       fromDate: [
@@ -174,8 +217,46 @@ export default {
       };
     });
 
+    const exportReport = async () => {
+      isExporting.value = true;
+      try {
+        const response = await reportDataHttp.getAll({
+          ...serializedFilters.value,
+          name: 'attendance',
+          _dateFormattingEnabled: true,
+          limit: 0,
+        });
+        const data = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+        const rows = [
+          [$t('general.employee_name'), $t('time.time_hours')],
+          ...data.map((item) => [item.employeeName, item.time]),
+        ];
+        downloadCsv(rows, 'attendance-summary-report.csv');
+      } catch (e) {
+        showErrorToast({
+          title: $t('general.error'),
+          message: $t('general.unexpected_error'),
+        });
+      } finally {
+        isExporting.value = false;
+      }
+    };
+
+    const handleSubmit = (generateReport) => {
+      if (pendingAction.value === 'export') {
+        exportReport();
+      } else {
+        generateReport();
+      }
+    };
+
     return {
       rules,
+      pendingAction,
+      isExporting,
+      handleSubmit,
       filters,
       serializedFilters,
     };
