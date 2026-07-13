@@ -20,7 +20,7 @@
 <template>
   <div class="orangehrm-background-container">
     <oxd-table-filter :filter-title="$t('general.directory')">
-      <oxd-form @submit-valid="onSearch">
+      <oxd-form @submit-valid="onSearch" @reset="onReset">
         <oxd-form-row>
           <oxd-grid :cols="3">
             <oxd-grid-item>
@@ -79,6 +79,24 @@
               :key="employee.id"
             >
               <summary-card
+                v-if="isMobile && currentIndex === index"
+                :employee-id="employee.id"
+                :employee-name="employee.employeeName"
+                :employee-sub-unit="employee.employeeSubUnit"
+                :employee-location="employee.employeeLocation"
+                :employee-designation="employee.employeeJobTitle"
+                :employee-work-email="employee.employeeWorkEmail"
+                :employee-work-telephone="employee.employeeWorkTelephone"
+                @click="showEmployeeDetails(index)"
+              >
+                <employee-details
+                  :employee-id="employee.id"
+                  :is-mobile="isMobile"
+                >
+                </employee-details>
+              </summary-card>
+              <summary-card
+                v-else
                 :employee-id="employee.id"
                 :employee-name="employee.employeeName"
                 :employee-sub-unit="employee.employeeSubUnit"
@@ -130,6 +148,7 @@ import {
 import useInfiniteScroll from '@ohrm/core/util/composable/useInfiniteScroll';
 import EmployeeAutocomplete from '@/core/components/inputs/EmployeeAutocomplete';
 import SummaryCard from '@/orangehrmCorporateDirectoryPlugin/components/SummaryCard';
+import EmployeeDetails from '@/orangehrmCorporateDirectoryPlugin/components/EmployeeDetails';
 import SummaryCardDetails from '@/orangehrmCorporateDirectoryPlugin/components/SummaryCardDetails';
 import {OxdSpinner, useResponsive} from '@ohrm/oxd';
 
@@ -145,6 +164,7 @@ export default {
   components: {
     'summary-card': SummaryCard,
     'oxd-loading-spinner': OxdSpinner,
+    'employee-details': EmployeeDetails,
     'summary-card-details': SummaryCardDetails,
     'employee-autocomplete': EmployeeAutocomplete,
   },
@@ -205,24 +225,6 @@ export default {
       },
     });
 
-    const enrichContactInfo = (startIndex) => {
-      for (let i = startIndex; i < state.employees.length; i++) {
-        const idx = i;
-        const empId = state.employees[idx].id;
-        http
-          .get(empId, {model: 'detailed'})
-          .then((res) => {
-            const d = res.data.data;
-            state.employees[idx].employeeWorkEmail = d.contactInfo?.workEmail;
-            state.employees[idx].employeeWorkTelephone =
-              d.contactInfo?.workTelephone;
-          })
-          .catch(() => {
-            // ignore contact info fetch errors
-          });
-      }
-    };
-
     const fetchData = () => {
       state.isLoading = true;
       http
@@ -237,12 +239,10 @@ export default {
           const {data, meta} = response.data;
           state.total = meta?.total || 0;
           if (Array.isArray(data)) {
-            const startIndex = state.employees.length;
             state.employees = [
               ...state.employees,
               ...employeeDataNormalizer(data),
             ];
-            // enrichContactInfo(startIndex); // TEMPORAL: probando aislado
           }
           if (state.total === 0) {
             noRecordsFound();
