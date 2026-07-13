@@ -34,7 +34,7 @@
   max-height: 950px;
   overflow: auto;
   overflow-x: hidden;
-  background-color: transparent;
+  background-color: #4c4c4c;
   @include oxd-scrollbar();
   &-loader {
     margin: 0 auto;
