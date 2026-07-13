@@ -179,15 +179,15 @@ export default {
   height: auto;
   cursor: pointer;
   overflow: hidden;
-  padding: 0.5rem 1rem;
+  padding: 1.25rem 1.5rem;
 
   &-header {
     font-size: 14px;
     min-height: 28px;
     font-weight: 700;
     text-align: center;
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1rem;
     word-break: break-word;
     &.--break-words {
       @include truncate(2, 1, #fff);
@@ -198,8 +198,8 @@ export default {
     font-size: 12px;
     font-weight: 700;
     text-align: center;
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1rem;
     word-break: break-word;
     &.--break-words {
       @include truncate(1, 1, #fff);
@@ -214,7 +214,7 @@ export default {
       @include truncate(1, 1, #fff);
     }
     &:first-of-type {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.4rem;
     }
   }
 
@@ -222,7 +222,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    padding: 0.85rem;
     border-radius: 0.5rem;
     background-color: $oxd-background-white-shadow-color;
   }
@@ -234,12 +234,12 @@ export default {
   }
 
   @include oxd-respond-to('md') {
-    min-height: 260px;
+    min-height: 280px;
   }
 
   &-contact {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.85rem;
     border-radius: 0.5rem;
     background-color: $oxd-background-white-shadow-color;
 
@@ -247,7 +247,7 @@ export default {
       display: flex;
       align-items: center;
       &:not(:last-child) {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
       }
     }
   }
