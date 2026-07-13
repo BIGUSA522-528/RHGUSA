@@ -13,3 +13,6 @@ coverage/
 src/plugins/orangehrmFunctionalTestingPlugin
 .php-cs-fixer.cache
 .php-cs-fixer.php
+hikvision_sync.config.php
+hik_sync.log
+last_sync.json
