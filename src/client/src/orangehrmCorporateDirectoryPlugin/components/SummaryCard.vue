@@ -60,20 +60,34 @@
     </div>
     <div
       v-show="employeeWorkEmail || employeeWorkTelephone"
-      class="orangehrm-directory-card-contact-icons"
+      class="orangehrm-directory-card-contact"
     >
-      <oxd-icon-button
+      <div
         v-show="employeeWorkTelephone"
-        display-type="success"
-        name="telephone-fill"
+        class="orangehrm-directory-card-contact-item"
         @click.stop="openClientTelephone"
-      ></oxd-icon-button>
-      <oxd-icon-button
+      >
+        <oxd-icon
+          class="orangehrm-directory-card-icon"
+          name="telephone-fill"
+        ></oxd-icon>
+        <oxd-text tag="p" :class="cardDescriptionClasses">
+          {{ employeeWorkTelephone }}
+        </oxd-text>
+      </div>
+      <div
         v-show="employeeWorkEmail"
-        display-type="danger"
-        name="envelope-fill"
+        class="orangehrm-directory-card-contact-item"
         @click.stop="openClientEmail"
-      ></oxd-icon-button>
+      >
+        <oxd-icon
+          class="orangehrm-directory-card-icon"
+          name="envelope-fill"
+        ></oxd-icon>
+        <oxd-text tag="p" :class="cardDescriptionClasses">
+          {{ employeeWorkEmail }}
+        </oxd-text>
+      </div>
     </div>
     <slot></slot>
   </oxd-sheet>
@@ -223,11 +237,19 @@ export default {
     min-height: 260px;
   }
 
-  &-contact-icons {
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
+  &-contact {
     margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: $oxd-background-white-shadow-color;
+
+    &-item {
+      display: flex;
+      align-items: center;
+      &:not(:last-child) {
+        margin-bottom: 0.25rem;
+      }
+    }
   }
 }
 </style>
