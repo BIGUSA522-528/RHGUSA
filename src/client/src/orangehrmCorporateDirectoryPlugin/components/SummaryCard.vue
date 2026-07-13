@@ -191,6 +191,8 @@ export default {
     word-break: break-word;
     &.--break-words {
       @include truncate(2, 1.35, #fff);
+      word-break: normal;
+      overflow-wrap: break-word;
     }
   }
 
@@ -203,6 +205,8 @@ export default {
     word-break: break-word;
     &.--break-words {
       @include truncate(1, 1.35, #fff);
+      word-break: normal;
+      overflow-wrap: break-word;
     }
   }
 
@@ -212,6 +216,8 @@ export default {
     word-break: break-word;
     &.--break-words {
       @include truncate(1, 1.35, #fff);
+      word-break: normal;
+      overflow-wrap: break-word;
     }
     &:first-of-type {
       margin-bottom: 0.4rem;
