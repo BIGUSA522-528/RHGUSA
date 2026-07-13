@@ -31,7 +31,7 @@
 }
 
 .orangehrm-container {
-  height: 512px;
+  max-height: 512px;
   overflow: auto;
   overflow-x: hidden;
   @include oxd-scrollbar();
