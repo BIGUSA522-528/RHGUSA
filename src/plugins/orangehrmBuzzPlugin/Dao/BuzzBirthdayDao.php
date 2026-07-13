@@ -40,24 +40,27 @@ class BuzzBirthdayDao extends BaseDao
     ): Paginator {
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $this->setSortingAndPaginationParams($q, $employeeBirthdaySearchFilterParams);
+        $thisYearDateDiff = 'DATE_DIFF(:nextDate, CONCAT(:thisYear, SUBSTRING(employee.birthday,5,6)))';
         $orExpr = $q->expr()->orX(
-            $q->expr()->between(
-                'DATE_DIFF(:nextDate, CONCAT(:thisYear, SUBSTRING(employee.birthday,5,6)))',
-                ':dateDiffMin',
-                ':dateDiffMax'
-            )
+            $q->expr()->between($thisYearDateDiff, ':dateDiffMin', ':dateDiffMax')
         );
         if (($nextYear = $employeeBirthdaySearchFilterParams->getNextDate()->format('Y'))
             != $employeeBirthdaySearchFilterParams->getThisYear()
         ) {
+            $nextYearDateDiff = 'DATE_DIFF(:nextDate, CONCAT(:nextYear, SUBSTRING(employee.birthday,5,6)))';
             $orExpr->add(
-                $q->expr()->between(
-                    'DATE_DIFF(:nextDate, CONCAT(:nextYear, SUBSTRING(employee.birthday,5,6)))',
-                    ':dateDiffMin',
-                    ':dateDiffMax'
-                )
+                $q->expr()->between($nextYearDateDiff, ':dateDiffMin', ':dateDiffMax')
             );
             $q->setParameter('nextYear', $nextYear);
+            $q->addOrderBy(
+                "CASE WHEN $thisYearDateDiff BETWEEN :dateDiffMin AND :dateDiffMax
+                    THEN $thisYearDateDiff
+                    ELSE $nextYearDateDiff
+                END",
+                'DESC'
+            );
+        } else {
+            $q->addOrderBy($thisYearDateDiff, 'DESC');
         }
         $q->andWhere($orExpr)
             ->setParameter('thisYear', $employeeBirthdaySearchFilterParams->getThisYear())
