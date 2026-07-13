@@ -50,7 +50,7 @@
         ></post-filters>
       </news-feed>
     </oxd-grid-item>
-    <oxd-grid-item>
+    <oxd-grid-item class="orangehrm-buzz-sidebar">
       <upcoming-anniversaries></upcoming-anniversaries>
       <upcoming-birthdays></upcoming-birthdays>
     </oxd-grid-item>
@@ -67,7 +67,7 @@
     <oxd-grid-item>
       <news-feed :employee="employee" :sort-field="sortField"></news-feed>
     </oxd-grid-item>
-    <oxd-grid-item>
+    <oxd-grid-item class="orangehrm-buzz-sidebar">
       <upcoming-anniversaries></upcoming-anniversaries>
       <upcoming-birthdays></upcoming-birthdays>
     </oxd-grid-item>

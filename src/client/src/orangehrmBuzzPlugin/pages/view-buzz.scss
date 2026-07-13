@@ -23,3 +23,10 @@
     grid-template-columns: minmax(0, 375px) minmax(240px, 640px) minmax(0, 375px);
   }
 }
+
+.orangehrm-buzz-sidebar {
+  @include oxd-respond-to('lg') {
+    top: 9rem;
+    position: sticky;
+  }
+}
