@@ -19,6 +19,7 @@
 
 namespace OrangeHRM\Time\Report;
 
+use DateTime;
 use OrangeHRM\Core\Api\CommonParams;
 use OrangeHRM\Core\Api\V2\ParameterBag;
 use OrangeHRM\Core\Report\ReportData;
@@ -57,9 +58,11 @@ class EmployeeReportData implements ReportData
                 . ' - ' . $timesheetItem['projectName'];
             $activityName = $timesheetItem['activityName'];
             $duration = $this->getNumberHelper()->numberFormat($timesheetItem['totalDurationByGroup'] / 3600, 2);
+            $itemDate = $timesheetItem['itemDate'] ?? null;
             $result[] = [
                 EmployeeReport::PARAMETER_PROJECT_NAME => $projectName,
                 EmployeeReport::PARAMETER_ACTIVITY_NAME => $activityName,
+                EmployeeReport::PARAMETER_DATE => $itemDate instanceof DateTime ? $itemDate->format('Y-m-d') : ($itemDate ?? '-'),
                 EmployeeReport::PARAMETER_DURATION => $duration
             ];
         }

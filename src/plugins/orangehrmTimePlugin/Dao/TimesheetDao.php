@@ -441,13 +441,16 @@ class TimesheetDao extends BaseDao
             'project.name AS projectName',
             'projectActivity.name AS activityName',
             'customer.name AS customerName',
+            'timesheetItem.date AS itemDate',
             'COALESCE(SUM(timesheetItem.duration),0) AS totalDurationByGroup'
         );
 
         $qb->addGroupBy('projectName');
         $qb->addGroupBy('activityName');
         $qb->addGroupBy('customerName');
+        $qb->addGroupBy('itemDate');
 
+        $qb->addOrderBy('itemDate', ListSorter::ASCENDING);
         $qb->addOrderBy('projectName', ListSorter::ASCENDING);
         $qb->addOrderBy('activityName', ListSorter::ASCENDING);
         $qb->addOrderBy('customerName', ListSorter::ASCENDING);

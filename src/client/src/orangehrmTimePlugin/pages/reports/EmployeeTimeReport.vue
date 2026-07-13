@@ -22,7 +22,7 @@
     module="time"
     name="employee"
     :filters="serializedFilters"
-    :column-count="3"
+    :column-count="4"
   >
     <template #default="{generateReport}">
       <oxd-table-filter :filter-title="$t('time.employee_report')">
