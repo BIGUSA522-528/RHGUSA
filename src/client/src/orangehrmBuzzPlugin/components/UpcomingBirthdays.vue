@@ -50,11 +50,10 @@
           </div>
         </div>
         <div class="orangehrm-buzz-birthday-duration">
-          <img
-            alt="birthday celebration"
+          <oxd-icon
             class="orangehrm-buzz-birthday-year-celebration"
-            :src="celebrationPic"
-          />
+            name="balloon-fill"
+          ></oxd-icon>
           <div class="orangehrm-buzz-birthday-durations-text">
             <oxd-text tag="p" class="orangehrm-buzz-birthday-duration-date">
               {{ birthday.birthdayDate }}
@@ -78,6 +77,7 @@
 </template>
 
 <script>
+import {OxdIcon} from '@ohrm/oxd';
 import useLocale from '@/core/util/composable/useLocale';
 import {APIService} from '@/core/util/services/api.service';
 import {parseDate, formatDate} from '@/core/util/helper/datefns';
@@ -89,12 +89,12 @@ export default {
 
   components: {
     'profile-image': ProfileImage,
+    'oxd-icon': OxdIcon,
   },
 
   setup() {
     const {locale} = useLocale();
     const {$tEmpName} = useEmployeeNameTranslate();
-    const celebrationPic = `${window.appGlobal.publicPath}/images/year_celebration.png`;
     const noContentPic = `${window.appGlobal.publicPath}/images/buzz_no_anniversaries.png`;
 
     const http = new APIService(
@@ -106,7 +106,6 @@ export default {
       http,
       locale,
       noContentPic,
-      celebrationPic,
       tEmpName: $tEmpName,
     };
   },
