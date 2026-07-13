@@ -64,18 +64,7 @@
     }
   }
   &-logo {
-    position: absolute;
-    right: 15%;
-    padding: 1rem;
-    background-color: $oxd-background-pastel-white-color;
-    border-radius: 100%;
     display: none;
-    & img {
-      width: 10rem;
-    }
-    @include oxd-respond-to('md') {
-      display: block;
-    }
   }
   &-slot-wrapper {
     padding: 1rem 2rem;
@@ -129,6 +118,7 @@
     }
   }
   &-social {
+    display: none;
     padding: 1rem 0;
     &-text {
       text-align: center;

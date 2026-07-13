@@ -8,9 +8,9 @@
     <template v-for="(_, name) in $slots" #[name]="slotData">
       <slot :name="name" v-bind="slotData" />
     </template>
-    <template v-if="showUpgrade" #topbar-header-right-area>
-      <upgrade-button v-if="showUpgrade" />
-    </template>
+    <!--     <template v-if="showUpgrade" #topbar-header-right-area> -->
+    <!--       <upgrade-button v-if="showUpgrade" /> -->
+    <!--     </template> -->
     <template #user-actions>
       <li>
         <a
@@ -64,7 +64,7 @@ export default {
   components: {
     about: About,
     'oxd-layout': OxdLayout,
-    'upgrade-button': UpgradeButton,
+    // 'upgrade-button': UpgradeButton,
   },
   inheritAttrs: false,
   props: {
@@ -111,7 +111,7 @@ export default {
     };
 
     const onClickSupport = () => {
-      if (props.helpUrl) window.open(props.helpUrl, '_blank');
+      return false;
     };
 
     return {

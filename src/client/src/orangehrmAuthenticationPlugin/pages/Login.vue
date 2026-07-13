@@ -91,21 +91,18 @@
     </div>
     <div class="orangehrm-login-footer">
       <div v-if="showSocialMedia" class="orangehrm-login-footer-sm">
-        <a
-          href="https://www.linkedin.com/company/orangehrm/mycompany/"
-          target="_blank"
-        >
+        <span>
           <oxd-icon type="svg" class="orangehrm-sm-icon" name="linkedinFill" />
-        </a>
-        <a href="https://www.facebook.com/OrangeHRM/" target="_blank">
+        </span>
+        <span>
           <oxd-icon type="svg" class="orangehrm-sm-icon" name="facebookFill" />
-        </a>
-        <a href="https://twitter.com/orangehrm?lang=en" target="_blank">
+        </span>
+        <span>
           <oxd-icon type="svg" class="orangehrm-sm-icon" name="twitterFill" />
-        </a>
-        <a href="https://www.youtube.com/c/OrangeHRMInc" target="_blank">
+        </span>
+        <span>
           <oxd-icon type="svg" class="orangehrm-sm-icon" name="youtubeFill" />
-        </a>
+        </span>
       </div>
       <slot name="footer"></slot>
     </div>
