@@ -15,27 +15,15 @@
  * You should have received a copy of the GNU General Public License along with OrangeHRM.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-use OrangeHRM\Buzz\Service\BuzzAnniversaryService;
+namespace OrangeHRM\Buzz\Traits\Service;
 use OrangeHRM\Buzz\Service\BuzzBirthdayService;
-use OrangeHRM\Buzz\Service\BuzzService;
-use OrangeHRM\Buzz\Subscriber\BuzzAdjustCommentLikeCountSubscriber;
-use OrangeHRM\Core\Traits\EventDispatcherTrait;
 use OrangeHRM\Core\Traits\ServiceContainerTrait;
-use OrangeHRM\Framework\Http\Request;
-use OrangeHRM\Framework\PluginConfigurationInterface;
 use OrangeHRM\Framework\Services;
-class BuzzPluginConfiguration implements PluginConfigurationInterface
+trait BuzzBirthdayServiceTrait
 {
     use ServiceContainerTrait;
-    use EventDispatcherTrait;
-    /**
-     * @inheritDoc
-     */
-    public function initialize(Request $request): void
+    protected function getBuzzBirthdayService(): BuzzBirthdayService
     {
-        $this->getContainer()->register(Services::BUZZ_ANNIVERSARY_SERVICE, BuzzAnniversaryService::class);
-        $this->getContainer()->register(Services::BUZZ_BIRTHDAY_SERVICE, BuzzBirthdayService::class);
-        $this->getContainer()->register(Services::BUZZ_SERVICE, BuzzService::class);
-        $this->getEventDispatcher()->addSubscriber(new BuzzAdjustCommentLikeCountSubscriber());
+        return $this->getContainer()->get(Services::BUZZ_BIRTHDAY_SERVICE);
     }
 }

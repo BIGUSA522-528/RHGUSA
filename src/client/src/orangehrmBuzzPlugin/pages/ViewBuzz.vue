@@ -35,6 +35,7 @@
         :name="$t('buzz.upcoming_anniversaries')"
       >
         <upcoming-anniversaries></upcoming-anniversaries>
+        <upcoming-birthdays></upcoming-birthdays>
       </oxd-tab-panel>
     </oxd-tab-container>
   </template>
@@ -51,6 +52,7 @@
     </oxd-grid-item>
     <oxd-grid-item>
       <upcoming-anniversaries></upcoming-anniversaries>
+      <upcoming-birthdays></upcoming-birthdays>
     </oxd-grid-item>
   </oxd-grid>
 
@@ -67,6 +69,7 @@
     </oxd-grid-item>
     <oxd-grid-item>
       <upcoming-anniversaries></upcoming-anniversaries>
+      <upcoming-birthdays></upcoming-birthdays>
     </oxd-grid-item>
   </oxd-grid>
 </template>
@@ -84,6 +87,7 @@ import useSwipe from '@/core/util/composable/useSwipe';
 import NewsFeed from '@/orangehrmBuzzPlugin/components/NewsFeed.vue';
 import PostFilters from '@/orangehrmBuzzPlugin/components/PostFilters.vue';
 import UpcomingAnniversaries from '@/orangehrmBuzzPlugin/components/UpcomingAnniversaries.vue';
+import UpcomingBirthdays from '@/orangehrmBuzzPlugin/components/UpcomingBirthdays.vue';
 
 export default {
   components: {
@@ -92,6 +96,7 @@ export default {
     'post-filters': PostFilters,
     'oxd-tab-container': OxdTabContainer,
     'upcoming-anniversaries': UpcomingAnniversaries,
+    'upcoming-birthdays': UpcomingBirthdays,
   },
 
   props: {

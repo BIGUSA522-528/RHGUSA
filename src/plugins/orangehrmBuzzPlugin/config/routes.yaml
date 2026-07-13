@@ -110,3 +110,10 @@ buzz_module:
   path: /buzz/viewBuzz
   controller: OrangeHRM\Buzz\Controller\BuzzController::handle
   methods: [ GET ]
+
+apiv2_buzz_upcoming_birthday:
+  path: /api/v2/buzz/birthdays
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ GET ]
+  defaults:
+    _api: OrangeHRM\Buzz\Api\EmployeeBirthdayAPI
