@@ -58,6 +58,23 @@
         </oxd-text>
       </div>
     </div>
+    <div
+      v-show="employeeWorkEmail || employeeWorkTelephone"
+      class="orangehrm-directory-card-contact-icons"
+    >
+      <oxd-icon-button
+        v-show="employeeWorkTelephone"
+        display-type="success"
+        name="telephone-fill"
+        @click.stop="openClientTelephone"
+      ></oxd-icon-button>
+      <oxd-icon-button
+        v-show="employeeWorkEmail"
+        display-type="danger"
+        name="envelope-fill"
+        @click.stop="openClientEmail"
+      ></oxd-icon-button>
+    </div>
     <slot></slot>
   </oxd-sheet>
 </template>
@@ -95,6 +112,14 @@ export default {
       type: String,
       default: '',
     },
+    employeeWorkEmail: {
+      type: String,
+      default: null,
+    },
+    employeeWorkTelephone: {
+      type: String,
+      default: null,
+    },
     showBackButton: {
       type: Boolean,
       default: false,
@@ -122,6 +147,14 @@ export default {
         'orangehrm-directory-card-description': true,
         '--break-words': !this.hasDefaultSlot,
       };
+    },
+  },
+  methods: {
+    openClientTelephone() {
+      window.location.href = 'tel:' + this.employeeWorkTelephone;
+    },
+    openClientEmail() {
+      window.location.href = 'mailto:' + this.employeeWorkEmail;
     },
   },
 };
@@ -188,6 +221,13 @@ export default {
 
   @include oxd-respond-to('md') {
     min-height: 260px;
+  }
+
+  &-contact-icons {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
   }
 }
 </style>
