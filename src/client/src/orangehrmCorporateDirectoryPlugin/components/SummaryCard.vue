@@ -30,7 +30,7 @@
       {{ employeeName }}
     </oxd-text>
     <profile-picture :id="employeeId"></profile-picture>
-    <oxd-text v-show="employeeDesignation" tag="p" :class="cardSubTitleClasses">
+    <oxd-text tag="p" :class="cardSubTitleClasses">
       {{ employeeDesignation }}
     </oxd-text>
     <div
@@ -202,6 +202,7 @@ export default {
     text-align: center;
     margin-top: 1.25rem;
     margin-bottom: 1rem;
+    min-height: 1.35em;
     word-break: break-word;
     &.--break-words {
       @include truncate(1, 1.35, #fff);
