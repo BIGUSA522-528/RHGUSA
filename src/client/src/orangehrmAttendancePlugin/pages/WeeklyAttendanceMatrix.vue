@@ -98,6 +98,7 @@
             <th>Employee ID</th>
             <th>Nombre</th>
             <th>Departamento</th>
+            <th>Ubicación</th>
             <th v-for="day in dayColumns" :key="day.date">
               {{ day.label }}<br />
               {{ day.dateLabel }}
@@ -110,6 +111,7 @@
             <td>{{ employee.employeeId }}</td>
             <td>{{ employee.employeeName }}</td>
             <td>{{ employee.department || '-' }}</td>
+            <td>{{ employee.location || '-' }}</td>
             <td
               v-for="day in dayColumns"
               :key="day.date"
@@ -291,6 +293,7 @@ export default {
             'Employee ID',
             'Nombre',
             'Departamento',
+            'Ubicación',
             ...columns.map((day) => `${day.label} ${day.dateLabel}`),
             'Total Horas',
           ],
@@ -298,6 +301,7 @@ export default {
             employee.employeeId,
             employee.employeeName,
             employee.department || '-',
+            employee.location || '-',
             ...columns.map((day) => employee.dates[day.date] || '-'),
             employee.totalHoursWeek,
           ]),

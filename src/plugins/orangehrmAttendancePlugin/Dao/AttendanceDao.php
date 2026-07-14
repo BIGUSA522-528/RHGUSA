@@ -639,6 +639,7 @@ class AttendanceDao extends BaseDao
     ): array {
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $q->leftJoin('employee.subDivision', 'subunit');
+        $q->leftJoin('employee.locations', 'location');
         $q->leftJoin('employee.attendanceRecords', 'attendanceRecord', Expr\Join::WITH, $q->expr()->andX(
             $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
             $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate')
@@ -648,6 +649,7 @@ class AttendanceDao extends BaseDao
             'employee.employeeId AS employeeId',
             "CONCAT(employee.firstName, ' ', employee.lastName) AS employeeName",
             'subunit.name AS department',
+            'location.name AS locationName',
             'attendanceRecord.punchInUserTime AS punchInTime',
             'attendanceRecord.punchOutUserTime AS punchOutTime',
             "TIME_DIFF(COALESCE(attendanceRecord.punchOutUtcTime, 0), COALESCE(attendanceRecord.punchInUtcTime, 0), 'second') AS durationSeconds"
@@ -657,7 +659,6 @@ class AttendanceDao extends BaseDao
         $q->setParameter('toDate', $toDate . ' 23:59:59');
 
         if (!is_null($locationId)) {
-            $q->leftJoin('employee.locations', 'location');
             $q->andWhere('location.id = :locationId')
                 ->setParameter('locationId', $locationId);
         }
@@ -694,6 +695,7 @@ class AttendanceDao extends BaseDao
                     'employeeId' => $row['employeeId'],
                     'employeeName' => $row['employeeName'],
                     'department' => $row['department'],
+                    'location' => $row['locationName'],
                     'dates' => [],
                     'totalHoursWeek' => 0,
                 ];
