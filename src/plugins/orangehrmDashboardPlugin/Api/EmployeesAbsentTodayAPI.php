@@ -33,8 +33,9 @@ use OrangeHRM\Dashboard\Dao\AttendanceAnomalyDao;
 
 /**
  * Experimental dashboard widget: "Faltas Hoy".
- * Employees with no punch-in today, excluding employees on leave today
- * and the "Recursos Humanos" department (per explicit request).
+ * Employees with no punch-in today, excluding employees on leave today,
+ * managers (employee id starting with "G"), and the excluded departments
+ * (per explicit request).
  */
 class EmployeesAbsentTodayAPI extends Endpoint implements ResourceEndpoint
 {
@@ -42,12 +43,15 @@ class EmployeesAbsentTodayAPI extends Endpoint implements ResourceEndpoint
     use UserRoleManagerTrait;
 
     /**
-     * Subunit id for "Recursos Humanos" in this company's org chart.
-     * Also covers "Nominas" and "Gestion de Talento" job titles, which are
-     * held exclusively by employees within this department.
-     * Excluded from this widget per explicit request.
+     * Subunit ids excluded from this widget per explicit request:
+     * - 20 "Recursos Humanos". Also covers "Nominas" and "Gestion de Talento" job
+     *   titles, which are held exclusively by employees within this department.
+     * - 73 "NO Recontratable" — this company doesn't use OrangeHRM's formal
+     *   termination flow (employeeTerminationRecord/emp_status are unused), so
+     *   departed employees are parked in this subunit instead. Excluding it keeps
+     *   them out of "Faltas Hoy" even though they're technically still "active".
      */
-    private const EXCLUDED_SUBUNIT_IDS = [20];
+    private const EXCLUDED_SUBUNIT_IDS = [20, 73];
 
     /**
      * Job title ids for IT/Systems roles (Seguridad Informatica, Asesor TI, BI,
@@ -85,7 +89,8 @@ class EmployeesAbsentTodayAPI extends Endpoint implements ResourceEndpoint
         $employees = $this->getAttendanceAnomalyDao()->getAbsentEmployeesToday(
             $date,
             self::EXCLUDED_SUBUNIT_IDS,
-            self::EXCLUDED_JOB_TITLE_IDS
+            self::EXCLUDED_JOB_TITLE_IDS,
+            true
         );
 
         return new EndpointResourceResult(ArrayModel::class, [

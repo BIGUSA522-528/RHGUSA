@@ -26,6 +26,13 @@
     :loading="isLoading"
     title="Retardos Hoy"
   >
+    <template #action>
+      <oxd-icon-button
+        name="arrow-clockwise"
+        title="Refrescar"
+        @click="fetchData"
+      />
+    </template>
     <div
       v-for="employee in employeeList"
       :key="employee.empNumber"
@@ -42,9 +49,14 @@
         <oxd-text tag="p" class="orangehrm-leave-card-emp-name">
           {{ employee.employeeName }}
         </oxd-text>
-        <oxd-text tag="p" class="orangehrm-leave-card-leave-details">
-          Entrada: {{ employee.actualPunchInTime }} (esperada
-          {{ employee.expectedStartTime }})
+        <oxd-text
+          v-for="(incident, index) in employee.incidents"
+          :key="index"
+          tag="p"
+          class="orangehrm-leave-card-leave-details"
+        >
+          {{ incident.label }}: {{ incident.actual }} (esperada
+          {{ incident.expected }})
         </oxd-text>
       </div>
       <oxd-text tag="p" class="orangehrm-leave-card-emp-id">
@@ -55,6 +67,7 @@
 </template>
 
 <script>
+import {OxdIconButton} from '@ohrm/oxd';
 import {APIService} from '@/core/util/services/api.service';
 import BaseWidget from '@/orangehrmDashboardPlugin/components/BaseWidget.vue';
 
@@ -63,6 +76,7 @@ export default {
 
   components: {
     'base-widget': BaseWidget,
+    'oxd-icon-button': OxdIconButton,
   },
 
   setup() {
@@ -90,16 +104,22 @@ export default {
   },
 
   beforeMount() {
-    this.isLoading = true;
-    this.http
-      .getAll()
-      .then((response) => {
-        const {data} = response.data;
-        this.employeeList = data.employees ?? [];
-      })
-      .finally(() => {
-        this.isLoading = false;
-      });
+    this.fetchData();
+  },
+
+  methods: {
+    fetchData() {
+      this.isLoading = true;
+      this.http
+        .getAll()
+        .then((response) => {
+          const {data} = response.data;
+          this.employeeList = data.employees ?? [];
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
   },
 };
 </script>

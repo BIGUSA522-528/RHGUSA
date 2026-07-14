@@ -26,6 +26,13 @@
     :loading="isLoading"
     title="Faltas Hoy"
   >
+    <template #action>
+      <oxd-icon-button
+        name="arrow-clockwise"
+        title="Refrescar"
+        @click="fetchData"
+      />
+    </template>
     <div
       v-for="employee in employeeList"
       :key="employee.empNumber"
@@ -58,6 +65,7 @@
 </template>
 
 <script>
+import {OxdIconButton} from '@ohrm/oxd';
 import {APIService} from '@/core/util/services/api.service';
 import BaseWidget from '@/orangehrmDashboardPlugin/components/BaseWidget.vue';
 
@@ -66,6 +74,7 @@ export default {
 
   components: {
     'base-widget': BaseWidget,
+    'oxd-icon-button': OxdIconButton,
   },
 
   setup() {
@@ -93,16 +102,22 @@ export default {
   },
 
   beforeMount() {
-    this.isLoading = true;
-    this.http
-      .getAll()
-      .then((response) => {
-        const {data} = response.data;
-        this.employeeList = data.employees ?? [];
-      })
-      .finally(() => {
-        this.isLoading = false;
-      });
+    this.fetchData();
+  },
+
+  methods: {
+    fetchData() {
+      this.isLoading = true;
+      this.http
+        .getAll()
+        .then((response) => {
+          const {data} = response.data;
+          this.employeeList = data.employees ?? [];
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
   },
 };
 </script>

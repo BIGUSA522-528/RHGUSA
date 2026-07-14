@@ -33,9 +33,10 @@ use OrangeHRM\Dashboard\Dao\AttendanceAnomalyDao;
 
 /**
  * Experimental dashboard widget: "Retardos Hoy".
- * Employees whose first punch-in today is later than their expected start time
- * (own work shift if configured, otherwise the 09:00 company-wide default),
- * excluding the "Recursos Humanos" department (per explicit request).
+ * Employees late today under either of two fixed company-wide checkpoints
+ * (morning entry after 09:06, or lunch return after 16:06 — see
+ * AttendanceAnomalyDao::getLateEmployeesToday), excluding the excluded
+ * departments (per explicit request).
  */
 class EmployeesLateTodayAPI extends Endpoint implements ResourceEndpoint
 {
@@ -43,12 +44,15 @@ class EmployeesLateTodayAPI extends Endpoint implements ResourceEndpoint
     use UserRoleManagerTrait;
 
     /**
-     * Subunit id for "Recursos Humanos" in this company's org chart.
-     * Also covers "Nominas" and "Gestion de Talento" job titles, which are
-     * held exclusively by employees within this department.
-     * Excluded from this widget per explicit request.
+     * Subunit ids excluded from this widget per explicit request:
+     * - 20 "Recursos Humanos". Also covers "Nominas" and "Gestion de Talento" job
+     *   titles, which are held exclusively by employees within this department.
+     * - 73 "NO Recontratable" — this company doesn't use OrangeHRM's formal
+     *   termination flow (employeeTerminationRecord/emp_status are unused), so
+     *   departed employees are parked in this subunit instead. Excluding it keeps
+     *   them out of "Retardos Hoy" even though they're technically still "active".
      */
-    private const EXCLUDED_SUBUNIT_IDS = [20];
+    private const EXCLUDED_SUBUNIT_IDS = [20, 73];
 
     /**
      * Job title ids for IT/Systems roles (Seguridad Informatica, Asesor TI, BI,
@@ -57,12 +61,6 @@ class EmployeesLateTodayAPI extends Endpoint implements ResourceEndpoint
      * does not cover them. Excluded from this widget per explicit request.
      */
     private const EXCLUDED_JOB_TITLE_IDS = [1, 3, 4, 5, 33, 86];
-
-    /**
-     * Company-wide standard entry time, used when an employee has no
-     * work shift configured in ohrm_employee_work_shift.
-     */
-    private const DEFAULT_EXPECTED_START_TIME = '09:00:00';
 
     private ?AttendanceAnomalyDao $attendanceAnomalyDao = null;
 
@@ -91,7 +89,6 @@ class EmployeesLateTodayAPI extends Endpoint implements ResourceEndpoint
         $date = $this->getDateTimeHelper()->getNow();
         $employees = $this->getAttendanceAnomalyDao()->getLateEmployeesToday(
             $date,
-            self::DEFAULT_EXPECTED_START_TIME,
             self::EXCLUDED_SUBUNIT_IDS,
             self::EXCLUDED_JOB_TITLE_IDS
         );

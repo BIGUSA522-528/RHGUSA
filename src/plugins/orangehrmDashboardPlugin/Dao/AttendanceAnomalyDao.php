@@ -34,18 +34,28 @@ use OrangeHRM\ORM\ListSorter;
 class AttendanceAnomalyDao extends BaseDao
 {
     /**
+     * Employee id prefix used for managers/gerentes (e.g. "G001"). Managers are
+     * excluded from the "Faltas Hoy" widget per explicit request, since they don't
+     * follow the regular punch-in schedule.
+     */
+    private const MANAGER_EMPLOYEE_ID_PATTERN = 'G%';
+
+    /**
      * Employees with no punch-in record today, excluding those on approved/pending/taken
-     * leave today and, optionally, a set of departments (subunits) and/or job titles.
+     * leave today and, optionally, a set of departments (subunits), job titles, and
+     * managers (employee id starting with "G").
      *
      * @param DateTime $date
      * @param int[] $excludeSubunitIds
      * @param int[] $excludeJobTitleIds
+     * @param bool $excludeManagerEmployeeIds
      * @return array
      */
     public function getAbsentEmployeesToday(
         DateTime $date,
         array $excludeSubunitIds = [],
-        array $excludeJobTitleIds = []
+        array $excludeJobTitleIds = [],
+        bool $excludeManagerEmployeeIds = false
     ): array {
         $onLeaveEmpNumbers = $this->getEmpNumbersOnLeave($date);
 
@@ -73,36 +83,54 @@ class AttendanceAnomalyDao extends BaseDao
                 ->setParameter('onLeave', $onLeaveEmpNumbers);
         }
 
+        if ($excludeManagerEmployeeIds) {
+            $q->andWhere($q->expr()->notLike('employee.employeeId', ':managerIdPattern'))
+                ->setParameter('managerIdPattern', self::MANAGER_EMPLOYEE_ID_PATTERN);
+        }
+
         $this->applySubunitExclusion($q, $excludeSubunitIds);
         $this->applyJobTitleExclusion($q, $excludeJobTitleIds);
 
-        $q->orderBy('employee.empNumber', ListSorter::ASCENDING);
+        // No punch-in exists for these employees, so there's no arrival time to sort
+        // by; order by name instead so the list is still easy to scan.
+        $q->orderBy('employee.firstName', ListSorter::ASCENDING);
+        $q->addOrderBy('employee.lastName', ListSorter::ASCENDING);
 
         return $q->getQuery()->execute();
     }
 
     /**
-     * Employees whose first punch-in today is later than their configured work shift
-     * start time (falls back to $defaultExpectedStartTime when no shift is assigned),
-     * optionally excluding a set of departments (subunits).
+     * Fixed company-wide checkpoints for the "Retardos Hoy" widget. Replaces the
+     * previous per-employee work-shift lookup entirely, per explicit request:
+     * every employee is judged against these same two checkpoints regardless of
+     * whether they have a shift configured.
+     */
+    private const LATE_ENTRY_THRESHOLD = '09:06';
+    private const LATE_LUNCH_RETURN_THRESHOLD = '16:06';
+
+    /**
+     * Employees late today under either of two checkpoints, optionally excluding a
+     * set of departments (subunits) and/or job titles:
+     * - Morning entry (day's first punch-in) after 09:06.
+     * - Lunch return (day's second punch-in, i.e. the one following the lunch
+     *   punch-out) after 16:06.
+     * An employee can trigger one or both; each row lists every incident that
+     * applied. Employees with only one punch-in today are only checked against the
+     * morning-entry threshold, since they have no lunch-return punch yet/at all.
      *
      * @param DateTime $date
-     * @param string $defaultExpectedStartTime H:i:s
      * @param int[] $excludeSubunitIds
      * @param int[] $excludeJobTitleIds
      * @return array
      */
     public function getLateEmployeesToday(
         DateTime $date,
-        string $defaultExpectedStartTime,
         array $excludeSubunitIds = [],
         array $excludeJobTitleIds = []
     ): array {
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $q->leftJoin('employee.subDivision', 'subunit');
         $q->leftJoin('employee.jobTitle', 'jobTitle');
-        $q->leftJoin('employee.employeeWorkShift', 'empWorkShift');
-        $q->leftJoin('empWorkShift.workShift', 'workShift');
         $q->leftJoin('employee.attendanceRecords', 'attendanceRecord', Expr\Join::WITH, $q->expr()->andX(
             $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
             $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate')
@@ -112,8 +140,7 @@ class AttendanceAnomalyDao extends BaseDao
             'employee.employeeId AS employeeId',
             "CONCAT(employee.firstName, ' ', employee.lastName) AS employeeName",
             'subunit.name AS department',
-            'MIN(attendanceRecord.punchInUserTime) AS firstPunchIn',
-            'MIN(workShift.startTime) AS shiftStartTime'
+            'attendanceRecord.punchInUserTime AS punchInTime'
         );
         $q->andWhere($q->expr()->isNotNull('attendanceRecord.id'));
         $q->andWhere($q->expr()->isNull('employee.purgedAt'));
@@ -124,40 +151,79 @@ class AttendanceAnomalyDao extends BaseDao
         $this->applySubunitExclusion($q, $excludeSubunitIds);
         $this->applyJobTitleExclusion($q, $excludeJobTitleIds);
 
-        $q->groupBy('employee.empNumber');
         $q->orderBy('employee.empNumber', ListSorter::ASCENDING);
+        $q->addOrderBy('attendanceRecord.punchInUserTime', ListSorter::ASCENDING);
 
         $rows = $q->getQuery()->execute();
 
-        $result = [];
+        $employees = [];
         foreach ($rows as $row) {
-            if ($row['firstPunchIn'] === null) {
-                continue;
-            }
-            // MIN() aggregates lose their Doctrine column type on hydration and
-            // come back as plain strings instead of DateTime instances.
-            $firstPunchIn = $row['firstPunchIn'] instanceof DateTime
-                ? $row['firstPunchIn']
-                : new DateTime($row['firstPunchIn']);
-            $shiftStartTime = $row['shiftStartTime'];
-            if ($shiftStartTime !== null && !($shiftStartTime instanceof DateTime)) {
-                $shiftStartTime = new DateTime($shiftStartTime);
-            }
-            $expectedStartTime = $shiftStartTime instanceof DateTime
-                ? $shiftStartTime->format('H:i:s')
-                : $defaultExpectedStartTime;
-
-            if ($firstPunchIn->format('H:i:s') > $expectedStartTime) {
-                $result[] = [
-                    'empNumber' => $row['empNumber'],
+            $empNumber = $row['empNumber'];
+            if (!isset($employees[$empNumber])) {
+                $employees[$empNumber] = [
+                    'empNumber' => $empNumber,
                     'employeeId' => $row['employeeId'],
                     'employeeName' => $row['employeeName'],
                     'department' => $row['department'],
-                    'expectedStartTime' => substr($expectedStartTime, 0, 5),
-                    'actualPunchInTime' => $firstPunchIn->format('H:i'),
+                    'punchIns' => [],
                 ];
             }
+            if ($row['punchInTime'] !== null) {
+                $employees[$empNumber]['punchIns'][] = $row['punchInTime'];
+            }
         }
+
+        $result = [];
+        foreach ($employees as $data) {
+            /** @var DateTime[] $punchIns */
+            $punchIns = $data['punchIns'];
+            if (empty($punchIns)) {
+                continue;
+            }
+
+            $incidents = [];
+
+            // Compared at minute granularity (not H:i:s) so that, e.g., a punch-in
+            // at 09:06:03 still displays as "on time" instead of showing the same
+            // "09:06" as both actual and expected while being flagged as late.
+            $morningPunchIn = $punchIns[0];
+            if ($morningPunchIn->format('H:i') > self::LATE_ENTRY_THRESHOLD) {
+                $incidents[] = [
+                    'type' => 'entrada',
+                    'label' => 'Entrada',
+                    'expected' => self::LATE_ENTRY_THRESHOLD,
+                    'actual' => $morningPunchIn->format('H:i'),
+                ];
+            }
+
+            if (isset($punchIns[1])) {
+                $lunchReturn = $punchIns[1];
+                if ($lunchReturn->format('H:i') > self::LATE_LUNCH_RETURN_THRESHOLD) {
+                    $incidents[] = [
+                        'type' => 'comida',
+                        'label' => 'Regreso de comida',
+                        'expected' => self::LATE_LUNCH_RETURN_THRESHOLD,
+                        'actual' => $lunchReturn->format('H:i'),
+                    ];
+                }
+            }
+
+            if (empty($incidents)) {
+                continue;
+            }
+
+            $result[] = [
+                'empNumber' => $data['empNumber'],
+                'employeeId' => $data['employeeId'],
+                'employeeName' => $data['employeeName'],
+                'department' => $data['department'],
+                'incidents' => $incidents,
+                'firstPunchIn' => $morningPunchIn->format('H:i'),
+            ];
+        }
+
+        usort($result, fn (array $a, array $b) => $a['firstPunchIn'] <=> $b['firstPunchIn']);
+
         return $result;
     }
 
