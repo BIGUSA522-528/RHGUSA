@@ -61,7 +61,8 @@ class AttendanceAnomalyDao extends BaseDao
 
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $q->leftJoin('employee.subDivision', 'subunit');
-        $q->leftJoin('employee.jobTitle', 'jobTitle');
+        $q->leftJoin('employee.jobTitle', 'jobTitleEntity');
+        $q->leftJoin('employee.locations', 'empLocation');
         $q->leftJoin('employee.attendanceRecords', 'attendanceRecord', Expr\Join::WITH, $q->expr()->andX(
             $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
             $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate')
@@ -70,7 +71,9 @@ class AttendanceAnomalyDao extends BaseDao
             'employee.empNumber AS empNumber',
             'employee.employeeId AS employeeId',
             "CONCAT(employee.firstName, ' ', employee.lastName) AS employeeName",
-            'subunit.name AS department'
+            'subunit.name AS department',
+            'jobTitleEntity.jobTitleName AS jobTitle',
+            'empLocation.name AS location'
         );
         $q->andWhere($q->expr()->isNull('attendanceRecord.id'));
         $q->andWhere($q->expr()->isNull('employee.purgedAt'));
@@ -130,7 +133,8 @@ class AttendanceAnomalyDao extends BaseDao
     ): array {
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $q->leftJoin('employee.subDivision', 'subunit');
-        $q->leftJoin('employee.jobTitle', 'jobTitle');
+        $q->leftJoin('employee.jobTitle', 'jobTitleEntity');
+        $q->leftJoin('employee.locations', 'empLocation');
         $q->leftJoin('employee.attendanceRecords', 'attendanceRecord', Expr\Join::WITH, $q->expr()->andX(
             $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
             $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate')
@@ -140,6 +144,8 @@ class AttendanceAnomalyDao extends BaseDao
             'employee.employeeId AS employeeId',
             "CONCAT(employee.firstName, ' ', employee.lastName) AS employeeName",
             'subunit.name AS department',
+            'jobTitleEntity.jobTitleName AS jobTitle',
+            'empLocation.name AS location',
             'attendanceRecord.punchInUserTime AS punchInTime'
         );
         $q->andWhere($q->expr()->isNotNull('attendanceRecord.id'));
@@ -165,6 +171,8 @@ class AttendanceAnomalyDao extends BaseDao
                     'employeeId' => $row['employeeId'],
                     'employeeName' => $row['employeeName'],
                     'department' => $row['department'],
+                    'jobTitle' => $row['jobTitle'],
+                    'location' => $row['location'],
                     'punchIns' => [],
                 ];
             }
@@ -191,8 +199,8 @@ class AttendanceAnomalyDao extends BaseDao
                 $incidents[] = [
                     'type' => 'entrada',
                     'label' => 'Entrada',
-                    'expected' => self::LATE_ENTRY_THRESHOLD,
-                    'actual' => $morningPunchIn->format('H:i'),
+                    'expected' => self::formatTime12Hour(self::LATE_ENTRY_THRESHOLD),
+                    'actual' => self::formatTime12Hour($morningPunchIn),
                 ];
             }
 
@@ -202,8 +210,8 @@ class AttendanceAnomalyDao extends BaseDao
                     $incidents[] = [
                         'type' => 'comida',
                         'label' => 'Regreso de comida',
-                        'expected' => self::LATE_LUNCH_RETURN_THRESHOLD,
-                        'actual' => $lunchReturn->format('H:i'),
+                        'expected' => self::formatTime12Hour(self::LATE_LUNCH_RETURN_THRESHOLD),
+                        'actual' => self::formatTime12Hour($lunchReturn),
                     ];
                 }
             }
@@ -217,6 +225,8 @@ class AttendanceAnomalyDao extends BaseDao
                 'employeeId' => $data['employeeId'],
                 'employeeName' => $data['employeeName'],
                 'department' => $data['department'],
+                'jobTitle' => $data['jobTitle'],
+                'location' => $data['location'],
                 'incidents' => $incidents,
                 'firstPunchIn' => $morningPunchIn->format('H:i'),
             ];
@@ -225,6 +235,16 @@ class AttendanceAnomalyDao extends BaseDao
         usort($result, fn (array $a, array $b) => $a['firstPunchIn'] <=> $b['firstPunchIn']);
 
         return $result;
+    }
+
+    /**
+     * @param DateTime|string $time A DateTime, or an "H:i" string.
+     * @return string e.g. "09:06 am"
+     */
+    private static function formatTime12Hour($time): string
+    {
+        $dateTime = $time instanceof DateTime ? $time : DateTime::createFromFormat('H:i', $time);
+        return $dateTime->format('h:i a');
     }
 
     /**
@@ -272,8 +292,8 @@ class AttendanceAnomalyDao extends BaseDao
             return;
         }
         $q->andWhere($q->expr()->orX(
-            $q->expr()->isNull('jobTitle.id'),
-            $q->expr()->notIn('jobTitle.id', ':excludeJobTitles')
+            $q->expr()->isNull('jobTitleEntity.id'),
+            $q->expr()->notIn('jobTitleEntity.id', ':excludeJobTitles')
         ))->setParameter('excludeJobTitles', $excludeJobTitleIds);
     }
 }

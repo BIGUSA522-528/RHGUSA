@@ -50,6 +50,22 @@
           {{ employee.employeeName }}
         </oxd-text>
         <oxd-text
+          v-if="employee.jobTitle"
+          tag="p"
+          class="orangehrm-leave-card-leave-details"
+        >
+          {{ employee.jobTitle }}
+        </oxd-text>
+        <oxd-text
+          v-if="employee.department || employee.location"
+          tag="p"
+          class="orangehrm-leave-card-leave-details"
+        >
+          {{
+            [employee.department, employee.location].filter(Boolean).join(' · ')
+          }}
+        </oxd-text>
+        <oxd-text
           v-for="(incident, index) in employee.incidents"
           :key="index"
           tag="p"
