@@ -626,12 +626,16 @@ class AttendanceDao extends BaseDao
      *   ...
      * ]
      */
+    /**
+     * @param int[] $excludeSubunitIds
+     */
     public function getWeeklyAttendanceMatrix(
         string $fromDate,
         string $toDate,
         ?int $locationId = null,
         ?int $subunitId = null,
-        ?int $empNumber = null
+        ?int $empNumber = null,
+        array $excludeSubunitIds = []
     ): array {
         $q = $this->createQueryBuilder(Employee::class, 'employee');
         $q->leftJoin('employee.subDivision', 'subunit');
@@ -667,6 +671,13 @@ class AttendanceDao extends BaseDao
         if (!is_null($empNumber)) {
             $q->andWhere('employee.empNumber = :empNumber')
                 ->setParameter('empNumber', $empNumber);
+        }
+
+        if (!empty($excludeSubunitIds)) {
+            $q->andWhere($q->expr()->orX(
+                $q->expr()->isNull('subunit.id'),
+                $q->expr()->notIn('subunit.id', ':excludeSubunitIds')
+            ))->setParameter('excludeSubunitIds', $excludeSubunitIds);
         }
 
         $q->orderBy('employee.empNumber', ListSorter::ASCENDING);

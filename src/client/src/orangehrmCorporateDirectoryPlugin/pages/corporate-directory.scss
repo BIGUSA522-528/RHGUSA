@@ -31,7 +31,8 @@
 }
 
 .orangehrm-container {
-  max-height: 950px;
+  max-height: calc(100vh - 520px);
+  min-height: 200px;
   overflow: auto;
   overflow-x: hidden;
   background-color: #4c4c4c;

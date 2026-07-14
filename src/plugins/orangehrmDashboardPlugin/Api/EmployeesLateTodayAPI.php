@@ -56,11 +56,13 @@ class EmployeesLateTodayAPI extends Endpoint implements ResourceEndpoint
 
     /**
      * Job title ids for IT/Systems roles (Seguridad Informatica, Asesor TI, BI,
-     * Gerente Sistemas, Auxiliar Sistemas, Gerente de Sistemas). These employees
-     * are scattered across multiple departments, so department exclusion alone
-     * does not cover them. Excluded from this widget per explicit request.
+     * Gerente Sistemas, Auxiliar Sistemas, Gerente de Sistemas) plus Hostess /
+     * front-desk roles (Recepcionista, Hostess Nuevos, Hostess Seminuevos,
+     * Hostess Servicio). These employees are scattered across multiple
+     * departments, so department exclusion alone does not cover them.
+     * Excluded from this widget per explicit request.
      */
-    private const EXCLUDED_JOB_TITLE_IDS = [1, 3, 4, 5, 33, 86];
+    private const EXCLUDED_JOB_TITLE_IDS = [1, 3, 4, 5, 33, 86, 2, 90, 91, 92];
 
     private ?AttendanceAnomalyDao $attendanceAnomalyDao = null;
 

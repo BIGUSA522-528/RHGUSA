@@ -22,10 +22,25 @@ namespace OrangeHRM\Dashboard\Service;
 use OrangeHRM\Dashboard\Dao\ChartDao;
 use OrangeHRM\Dashboard\Dto\EmployeeDistributionByLocation;
 use OrangeHRM\Dashboard\Dto\EmployeeDistributionBySubunit;
+use OrangeHRM\Dashboard\Dto\LocationEmployeeCount;
 use OrangeHRM\Dashboard\Dto\SubunitCountPair;
 
 class ChartService
 {
+    /**
+     * Shortened labels for the "Employee Distribution by Location" widget,
+     * keyed by ohrm_location id, per explicit request. Presentation-only:
+     * the underlying Location name (used by Directory, PIM job details,
+     * Admin > Locations, etc.) is left untouched.
+     */
+    private const LOCATION_DISPLAY_NAME_OVERRIDES = [
+        1 => 'Matriz',
+        2 => 'Sur',
+        3 => 'GTO',
+        4 => 'SMA',
+        5 => 'C Leon',
+        6 => 'C QRO',
+    ];
     /**
      * @var ChartDao
      */
@@ -96,7 +111,10 @@ class ChartService
      */
     public function getEmployeeDistributionByLocation(int $limit = 8): EmployeeDistributionByLocation
     {
-        $locationEmployeeCount = $this->getChartDao()->getEmployeeDistributionByLocation();
+        $locationEmployeeCount = array_map(
+            [$this, 'applyLocationDisplayNameOverride'],
+            $this->getChartDao()->getEmployeeDistributionByLocation()
+        );
         $unassignedEmployeeCount =  $this->getLocationUnassignedEmployeeCount($locationEmployeeCount);
 
         $totalLocationCount = count($locationEmployeeCount);
@@ -117,6 +135,17 @@ class ChartService
             $totalLocationCount,
             $unassignedEmployeeCount,
             $limit,
+        );
+    }
+
+    private function applyLocationDisplayNameOverride(LocationEmployeeCount $locationEmployeeCount): LocationEmployeeCount
+    {
+        $displayName = self::LOCATION_DISPLAY_NAME_OVERRIDES[$locationEmployeeCount->getLocationId()]
+            ?? $locationEmployeeCount->getLocationName();
+        return new LocationEmployeeCount(
+            $locationEmployeeCount->getLocationId(),
+            $displayName,
+            $locationEmployeeCount->getEmployeeCount()
         );
     }
 }

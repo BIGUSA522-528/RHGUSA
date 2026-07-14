@@ -55,6 +55,14 @@ class WeeklyAttendanceMatrixAPI extends Endpoint implements ResourceEndpoint
     public const FILTER_SUBUNIT_ID = 'subunitId';
     public const FILTER_EMP_NUMBER = CommonParams::PARAMETER_EMP_NUMBER;
 
+    /**
+     * Subunit ids excluded from this matrix per explicit request, same
+     * "Sistemas" IT/Systems departments excluded elsewhere (see
+     * EmployeesAbsentTodayAPI/EmployeesLateTodayAPI): "Sistemas Matriz" (29),
+     * "Sistemas Staff" (30), "Sistemas_sur" (58).
+     */
+    private const EXCLUDED_SUBUNIT_IDS = [29, 30, 58];
+
     private ?AttendanceDao $attendanceDao = null;
 
     protected function getAttendanceDao(): AttendanceDao
@@ -105,7 +113,8 @@ class WeeklyAttendanceMatrixAPI extends Endpoint implements ResourceEndpoint
             $toDate,
             $locationId,
             $subunitId,
-            $empNumber
+            $empNumber,
+            self::EXCLUDED_SUBUNIT_IDS
         );
 
         return new EndpointResourceResult(ArrayModel::class, [
