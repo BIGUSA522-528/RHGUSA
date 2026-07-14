@@ -34,11 +34,19 @@ use OrangeHRM\ORM\ListSorter;
 class AttendanceAnomalyDao extends BaseDao
 {
     /**
-     * Employee id prefix used for managers/gerentes (e.g. "G001"). Managers are
+     * Employee id prefix used for some managers/gerentes (e.g. "G001"). Managers are
      * excluded from the "Faltas Hoy" widget per explicit request, since they don't
      * follow the regular punch-in schedule.
      */
     private const MANAGER_EMPLOYEE_ID_PATTERN = 'G%';
+
+    /**
+     * Job title substring identifying managers/gerentes who don't have a "G..."
+     * employee id (e.g. "Gerente Refacciones", "Asistente Gerente Ventas" — most
+     * managers are NOT in the G-prefixed range, so this is the primary signal and
+     * the id pattern above only catches a handful of additional cases).
+     */
+    private const MANAGER_JOB_TITLE_PATTERN = '%Gerente%';
 
     /**
      * Employees with no punch-in record today, excluding those on approved/pending/taken
@@ -87,8 +95,15 @@ class AttendanceAnomalyDao extends BaseDao
         }
 
         if ($excludeManagerEmployeeIds) {
-            $q->andWhere($q->expr()->notLike('employee.employeeId', ':managerIdPattern'))
-                ->setParameter('managerIdPattern', self::MANAGER_EMPLOYEE_ID_PATTERN);
+            $q->andWhere($q->expr()->andX(
+                $q->expr()->notLike('employee.employeeId', ':managerIdPattern'),
+                $q->expr()->orX(
+                    $q->expr()->isNull('jobTitleEntity.jobTitleName'),
+                    $q->expr()->notLike('jobTitleEntity.jobTitleName', ':managerJobTitlePattern')
+                )
+            ))
+                ->setParameter('managerIdPattern', self::MANAGER_EMPLOYEE_ID_PATTERN)
+                ->setParameter('managerJobTitlePattern', self::MANAGER_JOB_TITLE_PATTERN);
         }
 
         $this->applySubunitExclusion($q, $excludeSubunitIds);
