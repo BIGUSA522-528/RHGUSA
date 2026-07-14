@@ -88,6 +88,14 @@ class BasicUserRoleManager extends AbstractUserRoleManager
             'Admin' => [
                 'class' => 'AdminUserRole',
             ],
+            // Custom RH role (2026-07-14): reuses AdminUserRole's entity-visibility
+            // logic (sees all employees/records, not scoped to a supervisor chain).
+            // Screen/data-group grants (ohrm_user_role_screen/ohrm_user_role_data_group)
+            // are what actually restrict what RH can access -- this only controls
+            // *which employees* show up in list queries once a screen is reachable.
+            'RH' => [
+                'class' => 'AdminUserRole',
+            ],
             'Supervisor' => [
                 'class' => 'SupervisorUserRole',
             ],
