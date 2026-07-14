@@ -166,7 +166,9 @@ export default {
           role:
             item.userRole?.displayName === 'Admin'
               ? $t('general.admin')
-              : $t('general.ess'),
+              : item.userRole?.displayName === 'ESS'
+              ? $t('general.ess')
+              : item.userRole?.displayName,
           empName: $tEmpName(item.employee, {includeMiddle: false}),
           status: item.status ? $t('general.enabled') : $t('general.disabled'),
           isSelectable: selectable === -1,
@@ -278,6 +280,7 @@ export default {
       userRoles: [
         {id: 1, label: this.$t('general.admin')},
         {id: 2, label: this.$t('general.ess')},
+        {id: 8, label: 'RH'},
       ],
       userStatuses: [
         {id: 1, label: this.$t('general.enabled')},

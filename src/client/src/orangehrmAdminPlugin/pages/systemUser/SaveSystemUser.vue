@@ -155,6 +155,7 @@ export default {
       userRoles: [
         {id: 1, label: this.$t('general.admin')},
         {id: 2, label: this.$t('general.ess')},
+        {id: 8, label: 'RH'},
       ],
       userStatuses: [
         {id: 1, label: this.$t('general.enabled')},
