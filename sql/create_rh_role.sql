@@ -52,8 +52,8 @@ WHERE urs.user_role_id = 1
     56,
     -- Recruitment: Delete Job Vacancy, Delete Candidate
     95, 97,
-    -- Performance: Save KPI
-    104,
+    -- Performance: (nothing excluded -- RH gets every Performance screen,
+    -- including Save KPI, per explicit request)
     -- Claim: Events, Create Event, Expense Types, Create Expense (config)
     171, 172, 173, 174
   );
