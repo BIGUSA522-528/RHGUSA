@@ -54,9 +54,11 @@ export default {
     display: flex;
   }
   &-item {
-    height: 35px;
-    line-height: 35px;
-    padding: 0rem 1rem;
+    display: flex;
+    align-items: center;
+    min-height: 35px;
+    line-height: 1.3;
+    padding: 0.5rem 1rem;
     border-radius: 0.85rem;
     flex: 100%;
     color: $oxd-interface-gray-darken-1-color;
@@ -76,9 +78,10 @@ export default {
     }
     @include oxd-respond-to('md') {
       margin-right: unset;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
       background-color: unset;
-      white-space: wrap;
+      white-space: normal;
+      word-break: break-word;
       &.--active,
       &:hover {
         background-color: $oxd-background-pastel-white-color;

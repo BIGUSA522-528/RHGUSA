@@ -38,12 +38,6 @@
       <buzz-latest-post-widget></buzz-latest-post-widget>
     </oxd-grid-item>
     <oxd-grid-item
-      v-if="$can.read('dashboard_leave_widget')"
-      class="orangehrm-dashboard-widget"
-    >
-      <employees-on-leave-widget></employees-on-leave-widget>
-    </oxd-grid-item>
-    <oxd-grid-item
       v-if="$can.read('dashboard_subunit_widget')"
       class="orangehrm-dashboard-widget"
     >
@@ -54,6 +48,24 @@
       class="orangehrm-dashboard-widget"
     >
       <employee-location-widget></employee-location-widget>
+    </oxd-grid-item>
+    <oxd-grid-item
+      v-if="$can.read('dashboard_leave_widget')"
+      class="orangehrm-dashboard-widget"
+    >
+      <employees-on-leave-widget></employees-on-leave-widget>
+    </oxd-grid-item>
+    <oxd-grid-item
+      v-if="$can.read('dashboard_absent_widget')"
+      class="orangehrm-dashboard-widget"
+    >
+      <employees-absent-today-widget></employees-absent-today-widget>
+    </oxd-grid-item>
+    <oxd-grid-item
+      v-if="$can.read('dashboard_late_widget')"
+      class="orangehrm-dashboard-widget"
+    >
+      <employees-late-today-widget></employees-late-today-widget>
     </oxd-grid-item>
   </oxd-grid>
 </template>
@@ -67,6 +79,8 @@ import MyActionSummaryWidget from '@/orangehrmDashboardPlugin/components/MyActio
 import EmployeeLocationWidget from '@/orangehrmDashboardPlugin/components/EmployeeLocationWidget.vue';
 import EmployeesOnLeaveWidget from '@/orangehrmDashboardPlugin/components/EmployeesOnLeaveWidget.vue';
 import EmployeeAttendanceWidget from '@/orangehrmDashboardPlugin/components/EmployeeAttendanceWidget.vue';
+import EmployeesAbsentTodayWidget from '@/orangehrmDashboardPlugin/components/EmployeesAbsentTodayWidget.vue';
+import EmployeesLateTodayWidget from '@/orangehrmDashboardPlugin/components/EmployeesLateTodayWidget.vue';
 
 export default {
   components: {
@@ -77,6 +91,8 @@ export default {
     'employee-location-widget': EmployeeLocationWidget,
     'employees-on-leave-widget': EmployeesOnLeaveWidget,
     'employee-attendance-widget': EmployeeAttendanceWidget,
+    'employees-absent-today-widget': EmployeesAbsentTodayWidget,
+    'employees-late-today-widget': EmployeesLateTodayWidget,
   },
   mounted() {
     const http = new APIService(window.appGlobal.baseUrl, '/events/push');

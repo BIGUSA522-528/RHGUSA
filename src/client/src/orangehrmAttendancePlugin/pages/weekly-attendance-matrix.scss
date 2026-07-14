@@ -1,0 +1,47 @@
+.orangehrm-weekly-attendance-matrix {
+  .orangehrm-weekly-matrix-table-wrapper {
+    overflow-x: auto;
+    margin: 1rem;
+    background: #fff;
+    border-radius: 0.25rem;
+  }
+
+  .orangehrm-weekly-matrix-empty {
+    padding: 1rem;
+    text-align: center;
+    color: #5b5b5b;
+  }
+
+  .orangehrm-weekly-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+
+    th,
+    td {
+      border: 1px solid #e0e0e0;
+      padding: 0.5rem;
+      text-align: left;
+      vertical-align: top;
+      white-space: pre-line;
+    }
+
+    thead th {
+      background: #f8f8f8;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .orangehrm-weekly-matrix-day-cell {
+      min-width: 6.5rem;
+    }
+
+    tbody tr {
+      transition: background-color 0.15s ease-in-out;
+
+      &:hover {
+        background-color: #e3f2fd;
+      }
+    }
+  }
+}

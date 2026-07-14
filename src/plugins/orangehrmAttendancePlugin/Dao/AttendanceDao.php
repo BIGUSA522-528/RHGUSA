@@ -22,6 +22,7 @@ namespace OrangeHRM\Attendance\Dao;
 use DateTime;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
+use OrangeHRM\Admin\Traits\Service\CompanyStructureServiceTrait;
 use OrangeHRM\Attendance\Dto\AttendanceRecordSearchFilterParams;
 use OrangeHRM\Attendance\Dto\EmployeeAttendanceSummarySearchFilterParams;
 use OrangeHRM\Attendance\Exception\AttendanceServiceException;
@@ -36,6 +37,8 @@ use OrangeHRM\Time\Dto\AttendanceReportSearchFilterParams;
 
 class AttendanceDao extends BaseDao
 {
+    use CompanyStructureServiceTrait;
+
     /**
      * @param  AttendanceRecord  $attendanceRecord
      * @return AttendanceRecord
@@ -599,5 +602,116 @@ class AttendanceDao extends BaseDao
 
         $this->setSortingAndPaginationParams($q, $employeeAttendanceSummarySearchFilterParams);
         return $this->getQueryBuilderWrapper($q);
+    }
+
+    /**
+     * Experimental: weekly matrix view (employee x day) for a date range.
+     * Not used by the existing "Informe de asistencias totales" report.
+     *
+     * @param string $fromDate Y-m-d
+     * @param string $toDate Y-m-d
+     * @param int|null $locationId
+     * @param int|null $subunitId
+     * @param int|null $empNumber
+     * @return array Example:
+     * [
+     *   [
+     *     'empNumber' => 12,
+     *     'employeeId' => 'EMP-0012',
+     *     'employeeName' => 'Jane Doe',
+     *     'department' => 'Sales',
+     *     'dates' => ['2026-07-06' => "08:03 - 17:01", '2026-07-07' => "08:10 - -"],
+     *     'totalHoursWeek' => 39.5,
+     *   ],
+     *   ...
+     * ]
+     */
+    public function getWeeklyAttendanceMatrix(
+        string $fromDate,
+        string $toDate,
+        ?int $locationId = null,
+        ?int $subunitId = null,
+        ?int $empNumber = null
+    ): array {
+        $q = $this->createQueryBuilder(Employee::class, 'employee');
+        $q->leftJoin('employee.subDivision', 'subunit');
+        $q->leftJoin('employee.attendanceRecords', 'attendanceRecord', Expr\Join::WITH, $q->expr()->andX(
+            $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
+            $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate')
+        ));
+        $q->select(
+            'employee.empNumber AS empNumber',
+            'employee.employeeId AS employeeId',
+            "CONCAT(employee.firstName, ' ', employee.lastName) AS employeeName",
+            'subunit.name AS department',
+            'attendanceRecord.punchInUserTime AS punchInTime',
+            'attendanceRecord.punchOutUserTime AS punchOutTime',
+            "TIME_DIFF(COALESCE(attendanceRecord.punchOutUtcTime, 0), COALESCE(attendanceRecord.punchInUtcTime, 0), 'second') AS durationSeconds"
+        );
+        $q->andWhere($q->expr()->isNull('employee.purgedAt'));
+        $q->setParameter('fromDate', $fromDate . ' 00:00:00');
+        $q->setParameter('toDate', $toDate . ' 23:59:59');
+
+        if (!is_null($locationId)) {
+            $q->leftJoin('employee.locations', 'location');
+            $q->andWhere('location.id = :locationId')
+                ->setParameter('locationId', $locationId);
+        }
+
+        if (!is_null($subunitId)) {
+            $subunitIdChain = $this->getCompanyStructureService()->getSubunitChainById($subunitId);
+            $q->andWhere($q->expr()->in('subunit.id', ':subunitIds'))
+                ->setParameter('subunitIds', $subunitIdChain);
+        }
+
+        if (!is_null($empNumber)) {
+            $q->andWhere('employee.empNumber = :empNumber')
+                ->setParameter('empNumber', $empNumber);
+        }
+
+        $q->orderBy('employee.empNumber', ListSorter::ASCENDING);
+        $q->addOrderBy('attendanceRecord.punchInUserTime', ListSorter::ASCENDING);
+
+        $rows = $q->getQuery()->execute();
+
+        $matrix = [];
+        foreach ($rows as $row) {
+            $empNumber = $row['empNumber'];
+            if (!isset($matrix[$empNumber])) {
+                $matrix[$empNumber] = [
+                    'empNumber' => $empNumber,
+                    'employeeId' => $row['employeeId'],
+                    'employeeName' => $row['employeeName'],
+                    'department' => $row['department'],
+                    'dates' => [],
+                    'totalHoursWeek' => 0,
+                ];
+            }
+
+            if ($row['punchInTime'] === null) {
+                // employee has no attendance records in range at all
+                continue;
+            }
+
+            /** @var DateTime $punchInTime */
+            $punchInTime = $row['punchInTime'];
+            /** @var DateTime|null $punchOutTime */
+            $punchOutTime = $row['punchOutTime'];
+
+            $date = $punchInTime->format('Y-m-d');
+            $entry = $punchInTime->format('H:i') . ' - ' . ($punchOutTime ? $punchOutTime->format('H:i') : '-');
+
+            $matrix[$empNumber]['dates'][$date][] = $entry;
+            $matrix[$empNumber]['totalHoursWeek'] += (int) ($row['durationSeconds'] ?? 0);
+        }
+
+        foreach ($matrix as $empNumber => $data) {
+            foreach ($data['dates'] as $date => $entries) {
+                $matrix[$empNumber]['dates'][$date] = implode("\n", $entries);
+            }
+            $matrix[$empNumber]['totalHoursWeek'] = round($matrix[$empNumber]['totalHoursWeek'] / 3600, 2);
+        }
+
+        return array_values($matrix);
     }
 }

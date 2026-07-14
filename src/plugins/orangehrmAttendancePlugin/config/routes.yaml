@@ -6,6 +6,14 @@ apiv2_attendance_configuration:
     id: 0
     _api: OrangeHRM\Attendance\Api\AttendanceConfigurationAPI
 
+apiv2_attendance_weekly_matrix:
+  path: /api/v2/attendance/weekly-matrix
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ GET ]
+  defaults:
+    id: 0
+    _api: OrangeHRM\Attendance\Api\WeeklyAttendanceMatrixAPI
+
 apiv2_employee_latest_attendance_record:
   path: /api/v2/attendance/records/latest
   controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
@@ -138,4 +146,9 @@ attendance_employee_punch_in_out:
 attendance_employee_edit_attendance:
   path: /attendance/editEmployeeAttendanceRecord/{id}
   controller: OrangeHRM\Attendance\Controller\EditEmployeeAttendanceController::handle
+  methods: [ GET ]
+
+attendance_weekly_matrix:
+  path: /attendance/displayWeeklyAttendanceMatrix
+  controller: OrangeHRM\Attendance\Controller\WeeklyAttendanceMatrixController::handle
   methods: [ GET ]

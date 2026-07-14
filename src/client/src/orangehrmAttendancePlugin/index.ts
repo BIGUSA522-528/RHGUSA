@@ -23,6 +23,7 @@ import AttendanceConfiguration from './pages/AttendanceConfiguration.vue';
 import AttendanceSummaryReport from './pages/AttendanceSummaryReport.vue';
 import ViewEmployeeAttendanceSummary from './pages/ViewEmployeeAttendanceSummary.vue';
 import ViewEmployeeAttendanceDetailed from './pages/ViewEmployeeAttendanceDetailed.vue';
+import WeeklyAttendanceMatrix from './pages/WeeklyAttendanceMatrix.vue';
 
 export default {
   'attendance-punch-in': PunchIn,
@@ -33,4 +34,5 @@ export default {
   'attendance-summary-report': AttendanceSummaryReport,
   'view-employee-attendance-summary': ViewEmployeeAttendanceSummary,
   'view-employee-attendance-detailed': ViewEmployeeAttendanceDetailed,
+  'weekly-attendance-matrix': WeeklyAttendanceMatrix,
 };
