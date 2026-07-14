@@ -71,7 +71,7 @@
           tag="p"
           class="orangehrm-leave-card-leave-details"
         >
-          {{ incident.label }}: {{ incident.actual }} (esperada
+          {{ incident.label }}: {{ incident.actual }} (tolerancia de llegada
           {{ incident.expected }})
         </oxd-text>
       </div>
